@@ -338,8 +338,8 @@ public final class ResponseAccumulator: HTTPClientResponseDelegate {
     }
 
     public struct ResponseTooBigError: Error, CustomStringConvertible {
-        public var maxBodySize: Int
-        public init(maxBodySize: Int) {
+        public var maxBodySize: UInt32
+        public init(maxBodySize: UInt32) {
             self.maxBodySize = maxBodySize
         }
 
@@ -352,14 +352,14 @@ public final class ResponseAccumulator: HTTPClientResponseDelegate {
     let requestMethod: HTTPMethod
     let requestHost: String
 
-    static let maxByteBufferSize = Int(truncatingIfNeeded: UInt32.max)
+    static let maxByteBufferSize : UInt32 = UInt32.max
 
     /// Maximum size in bytes of the HTTP response body that ``ResponseAccumulator`` will accept
     /// until it will abort the request and throw an ``ResponseTooBigError``.
     ///
     /// Default is 2^32.
     /// - precondition: not allowed to exceed 2^32 because `ByteBuffer` can not store more bytes
-    public let maxBodySize: Int
+    public let maxBodySize: UInt32
 
     public convenience init(request: HTTPClient.Request) {
         self.init(request: request, maxBodySize: Self.maxByteBufferSize)
@@ -373,12 +373,7 @@ public final class ResponseAccumulator: HTTPClientResponseDelegate {
     /// - precondition: maxBodySize is not allowed to exceed 2^32 because `ByteBuffer` can not store more bytes
     /// - warning: You can use ``ResponseAccumulator`` for just one request.
     /// If you start another request, you need to initiate another ``ResponseAccumulator``.
-    public init(request: HTTPClient.Request, maxBodySize: Int) {
-        precondition(maxBodySize >= 0, "maxBodyLength is not allowed to be negative")
-        precondition(
-            maxBodySize <= Self.maxByteBufferSize,
-            "maxBodyLength is not allowed to exceed 2^32 because ByteBuffer can not store more bytes"
-        )
+    public init(request: HTTPClient.Request, maxBodySize: UInt32) {
         self.requestMethod = request.method
         self.requestHost = request.host
         self.maxBodySize = maxBodySize
@@ -389,7 +384,7 @@ public final class ResponseAccumulator: HTTPClientResponseDelegate {
         case .idle:
             if self.requestMethod != .HEAD,
                let contentLength = head.headers.first(name: "Content-Length"),
-               let announcedBodySize = Int(contentLength),
+               let announcedBodySize = UInt32(contentLength),
                announcedBodySize > self.maxBodySize {
                 let error = ResponseTooBigError(maxBodySize: maxBodySize)
                 self.state = .error(error)
