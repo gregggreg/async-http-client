@@ -352,7 +352,7 @@ public final class ResponseAccumulator: HTTPClientResponseDelegate {
     let requestMethod: HTTPMethod
     let requestHost: String
 
-    static let maxByteBufferSize = Int(UInt32.max)
+    static let maxByteBufferSize = Int(truncatingIfNeeded: UInt32.max)
 
     /// Maximum size in bytes of the HTTP response body that ``ResponseAccumulator`` will accept
     /// until it will abort the request and throw an ``ResponseTooBigError``.
